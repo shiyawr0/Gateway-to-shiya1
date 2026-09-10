@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Angulo // Access Point</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&family=Oswald:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+
+:root {
+    --black: #050505;
+    --panel: #111111;
+
+    --red: #D90429;
+    --bright-red: #FF0033;
+
+    --white: #F7FAFC;
+    --gray: #A0AEC0;
+
+    --heading: 'Oswald', sans-serif;
+    --body: 'Montserrat', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    background: var(--black);
+    color: var(--gray);
+    font-family: var(--body);
+    overflow: hidden;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.025) 0px,
+        rgba(255,255,255,0.025) 1px,
+        transparent 1px,
+        transparent 4px
+    );
+    z-index: 999;
+}
+
+.app-background {
+    position: fixed;
+    inset: 0;
+
+    background:
+        radial-gradient(circle at 75% 50%, rgba(217, 4, 41, 0.15), transparent 35%),
+        radial-gradient(circle at 20% 80%, rgba(255, 0, 51, 0.08), transparent 30%),
+        linear-gradient(135deg, #050505, #151515 50%, #050505);
+
+    z-index: -5;
+}
+
+.app-background::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+
+    background-size: 50px 50px;
+
+    animation: gridMove 15s linear infinite;
+}
+
+@keyframes gridMove {
+    from { background-position: 0 0; }
+    to { background-position: 50px 50px; }
+}
+
+
+/* =====================================================
+   LOADING SCREEN — RADAR SCAN
+===================================================== */
+
+#loading-screen {
+    position: fixed;
+    inset: 0;
+
+    background: radial-gradient(circle at center, #191919, #050505 70%);
+
+    z-index: 10000;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 40px;
+
+    transition: opacity 1s ease, visibility 1s ease;
+}
+
+#loading-screen.fade-out {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.loading-tag {
+    position: absolute;
+    top: 35px;
+
+    font-family: var(--heading);
+    font-size: 0.7rem;
+    letter-spacing: 4px;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+}
+
+/* Radar frame with corner brackets */
+
+.radar-frame {
+    position: relative;
+    width: 240px;
+    height: 240px;
+}
+
+.radar-frame::before,
+.radar-frame::after,
+.corner-tr,
+.corner-bl {
+    content: "";
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--red);
+}
+
+/* top-left */
+.radar-frame::before {
+    top: -14px;
+    left: -14px;
+    border-right: none;
+    border-bottom: none;
+}
+
+/* bottom-right */
+.radar-frame::after {
+    bottom: -14px;
+    right: -14px;
+    border-left: none;
+    border-top: none;
+}
+
+.corner-tr {
+    top: -14px;
+    right: -14px;
+    border-left: none;
+    border-bottom: none;
+}
+
+.corner-bl {
+    bottom: -14px;
+    left: -14px;
+    border-right: none;
+    border-top: none;
+}
+
+/* Radar circle */
+
+.radar-circle {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+
+    border: 1px solid rgba(255,255,255,0.15);
+
+    background:
+        repeating-radial-gradient(
+            circle at center,
+            transparent 0,
+            transparent 29px,
+            rgba(255,255,255,0.06) 30px
+        );
+}
+
+.radar-circle::before {
+    content: "";
+    position: absolute;
+    inset: 30%;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.12);
+}
+
+/* rotating sweep */
+
+.radar-sweep {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+
+    background: conic-gradient(
+        from 0deg,
+        rgba(217,4,41,0) 0deg,
+        rgba(217,4,41,0.55) 25deg,
+        rgba(217,4,41,0) 60deg
+    );
+
+    animation: sweep 2.2s linear infinite;
+}
+
+@keyframes sweep {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* crosshair lines */
+
+.radar-crosshair::before,
+.radar-crosshair::after {
+    content: "";
+    position: absolute;
+    background: rgba(255,255,255,0.1);
+}
+
+.radar-crosshair::before {
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    transform: translateX(-50%);
+}
+
+.radar-crosshair::after {
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    transform: translateY(-50%);
+}
+
+/* blips */
+
+.radar-blip {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--bright-red);
+    box-shadow: 0 0 10px var(--bright-red), 0 0 20px var(--red);
+    animation: blipPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes blipPulse {
+    0%, 100% { opacity: 0.2; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* center readout */
+
+.radar-readout {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#load-percentage {
+    font-family: var(--heading);
+    font-size: 2.6rem;
+    color: var(--white);
+    text-shadow: 0 0 15px rgba(255,255,255,0.3);
+    letter-spacing: 1px;
+}
+
+.radar-readout-label {
+    margin-top: 4px;
+    font-family: var(--heading);
+    font-size: 0.6rem;
+    letter-spacing: 3px;
+    color: var(--red);
+    text-transform: uppercase;
+}
+
+/* status text below radar */
+
+.loading-status-block {
+    text-align: center;
+}
+
+.loading-title {
+    font-family: var(--heading);
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    color: var(--white);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.loading-title span {
+    color: var(--red);
+    text-shadow: 0 0 15px var(--red), 0 0 30px var(--red);
+}
+
+#load-status {
+    font-family: var(--heading);
+    font-size: 0.8rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gray);
+}
+
+.loading-footer {
+    position: absolute;
+    bottom: 30px;
+    left: 0;
+    padding: 0 7%;
+
+    font-family: var(--heading);
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.3);
+}
+
+
+/* =====================================================
+   MAIN CONTENT
+===================================================== */
+
+#main-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+
+    padding: 2rem;
+
+    opacity: 0;
+
+    transition: opacity 0.8s ease;
+}
+
+#main-content.visible {
+    opacity: 1;
+}
+
+.gateway-tag {
+    font-family: var(--heading);
+    font-size: 0.75rem;
+    letter-spacing: 4px;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+.gateway-title {
+    font-family: var(--heading);
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    color: var(--white);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    line-height: 1;
+    margin-bottom: 15px;
+}
+
+.gateway-title span {
+    color: var(--red);
+    text-shadow: 0 0 15px var(--red), 0 0 30px var(--red);
+}
+
+.gateway-subtitle {
+    font-size: 0.95rem;
+    color: var(--gray);
+    max-width: 500px;
+    line-height: 1.7;
+    margin-bottom: 45px;
+}
+
+.enter-btn {
+    position: relative;
+
+    padding: 18px 55px;
+
+    background: rgba(217,4,41,0.1);
+
+    border: 1px solid var(--red);
+
+    color: var(--white);
+
+    font-family: var(--heading);
+    font-size: 1rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    text-decoration: none;
+
+    cursor: pointer;
+
+    transition: 0.3s ease;
+
+    overflow: hidden;
+}
+
+.enter-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--red);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+    z-index: -1;
+}
+
+.enter-btn:hover {
+    color: var(--black);
+    box-shadow: 0 0 25px rgba(217,4,41,0.5);
+}
+
+.enter-btn:hover::before {
+    transform: scaleX(1);
+}
+
+.gateway-status {
+    margin-top: 30px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--heading);
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 10px var(--red);
+    animation: blink 1.2s infinite;
+}
+
+@keyframes blink {
+    50% { opacity: 0.2; }
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 768px) {
+    .radar-frame { width: 190px; height: 190px; }
+    #load-percentage { font-size: 2rem; }
+    .loading-title { font-size: 1.6rem; }
+    .loading-footer { display: none; }
+    .enter-btn { padding: 16px 40px; font-size: 0.9rem; }
+}
+
+</style>
+</head>
+
+
+<body>
+
+<div class="app-background"></div>
+
+
+<!-- =====================================================
+     LOADING SCREEN
+===================================================== -->
+
+<div id="loading-screen">
+
+    <div class="loading-tag">ANGULO // ACCESS POINT</div>
+
+    <div class="radar-frame">
+
+        <div class="corner-tr"></div>
+        <div class="corner-bl"></div>
+
+        <div class="radar-circle"></div>
+        <div class="radar-crosshair"></div>
+        <div class="radar-sweep"></div>
+
+        <div class="radar-blip" style="top: 35%; left: 62%;"></div>
+        <div class="radar-blip" style="top: 68%; left: 40%; animation-delay: 0.6s;"></div>
+
+        <div class="radar-readout">
+            <div id="load-percentage">0%</div>
+            <div class="radar-readout-label">Scanning</div>
+        </div>
+
+    </div>
+
+    <div class="loading-status-block">
+        <div class="loading-title">
+            SYSTEM <span>ONLINE</span>
+        </div>
+        <div id="load-status">Initializing System</div>
+    </div>
+
+    <div class="loading-footer">
+        <span>AUTHORIZATION: VERIFIED</span>
+        <span>CONNECTION: SECURE</span>
+        <span>BUILD 2026</span>
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     MAIN CONTENT
+===================================================== -->
+
+<div id="main-content">
+
+    <div class="gateway-tag">Personal Operations Network</div>
+
+    <h1 class="gateway-title">
+        JADEN <span>ANGULO</span>
+    </h1>
+
+    <p class="gateway-subtitle">
+        Access point verified. Proceed to the main operator
+        profile for projects, flowcharts, and activity archives.
+    </p>
+
+    <a
+        class="enter-btn"
+        href="https://shiyawr0.github.io/New-shiya1/">
+        Enter Site
+    </a>
+
+    <div class="gateway-status">
+        <div class="status-dot"></div>
+        Status: Ready
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     SCRIPT
+===================================================== -->
+
+<script>
+
+    const loadPercentage = document.getElementById('load-percentage');
+    const loadStatus = document.getElementById('load-status');
+    const loadingScreen = document.getElementById('loading-screen');
+    const mainContent = document.getElementById('main-content');
+
+    const statusMessages = [
+        { at: 0,   text: 'Initializing System' },
+        { at: 25,  text: 'Verifying Credentials' },
+        { at: 55,  text: 'Establishing Connection' },
+        { at: 80,  text: 'Rendering Interface' },
+        { at: 100, text: 'Ready' }
+    ];
+
+    let progress = 0;
+
+    const loadingInterval = setInterval(() => {
+        progress += Math.random() * 8 + 4;
+        if (progress >= 100) progress = 100;
+
+        loadPercentage.textContent = Math.floor(progress) + '%';
+
+        const current = [...statusMessages].reverse().find(step => progress >= step.at);
+        if (current) loadStatus.textContent = current.text;
+
+        if (progress >= 100) {
+            clearInterval(loadingInterval);
+            clearTimeout(failSafeTimer);
+            finishLoading();
+        }
+    }, 150);
+
+    const failSafeTimer = setTimeout(() => {
+        clearInterval(loadingInterval);
+        finishLoading();
+    }, 5000);
+
+    function finishLoading() {
+        setTimeout(() => {
+            loadingScreen.classList.add('fade-out');
+            mainContent.classList.add('visible');
+        }, 400);
+    }
+
+</script>
+
+
+</body>
+</html>
+
